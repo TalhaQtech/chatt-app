@@ -1,6 +1,9 @@
+import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:chat_app/models/UserModel.dart';
+import 'package:chat_app/models/firebase_service.dart';
+import 'package:chat_app/pages/HomePage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -64,10 +67,23 @@ class _CompleteProfileState extends State<CompleteProfile> {
     String? fullname = fullNameController.text.trim();
     widget.userModel!.fullname = fullname;
     widget.userModel!.profilepic = imageUrl;
-    await FirebaseFirestore.instance
-        .collection("users")
-        .doc(widget.userModel!.uid)
-        .set(widget.userModel!.toMap());
+    await firestore_set(
+            "users", widget.userModel!.uid, widget.userModel!.toMap())
+        .then((value) {
+      log("Data uploaded!");
+      Navigator.popUntil(context, (route) => route.isFirst);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) {
+          return HomePage(
+              userModel: widget.userModel, firebaseUser: widget.firebaseUser);
+        }),
+      );
+    });
+    // await FirebaseFirestore.instance
+    //     .collection("users")
+    //     .doc(widget.userModel!.uid)
+    //     .set(widget.userModel!.toMap());
   }
 
   void checkValues() {
